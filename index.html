@@ -100,6 +100,33 @@ button,a{-webkit-tap-highlight-color:transparent}
 .footer button{margin-top:15px;border:1px solid #b89555;background:transparent;color:#f1d99d;padding:10px 18px;border-radius:25px;font-size:9px;letter-spacing:1px}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
 .reveal.visible{opacity:1;transform:none}
+
+/* Floating gold petals */
+.petal-layer{position:fixed;inset:0;z-index:8;overflow:hidden;pointer-events:none}
+.petal{position:absolute;top:-12vh;color:#d9b66e;opacity:0;font-size:17px;text-shadow:0 2px 8px #7d4a2b55;animation:petalFall linear infinite}
+.petal:nth-child(1){left:7%;animation-duration:13s;animation-delay:0s}
+.petal:nth-child(2){left:22%;animation-duration:17s;animation-delay:4s;font-size:12px}
+.petal:nth-child(3){left:39%;animation-duration:15s;animation-delay:2s}
+.petal:nth-child(4){left:58%;animation-duration:19s;animation-delay:6s;font-size:13px}
+.petal:nth-child(5){left:76%;animation-duration:14s;animation-delay:1s}
+.petal:nth-child(6){left:91%;animation-duration:18s;animation-delay:5s;font-size:12px}
+@keyframes petalFall{0%{transform:translate3d(0,-5vh,0) rotate(0deg);opacity:0}10%{opacity:.65}50%{transform:translate3d(28px,55vh,0) rotate(180deg);opacity:.5}90%{opacity:.45}100%{transform:translate3d(-18px,112vh,0) rotate(360deg);opacity:0}}
+.action-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:18px}
+.action-btn{display:inline-block;padding:13px 19px;border-radius:28px;border:1px solid #b89555;background:transparent;color:#6a3540;font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer}
+.action-btn.primary{background:linear-gradient(135deg,#f3dfaa,#c89b4d);color:#42111d;border-color:#e7ca8c}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff!important;color:#222!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .intro,.nav,.petal-layer,.action-row,.footer button{display:none!important}
+  .details,.details.show{display:block!important;min-height:0!important;box-shadow:none!important}
+  .hero{break-after:avoid;min-height:0;padding:35px 15px!important}
+  .section{padding:28px 15px!important;break-inside:avoid}
+  .reveal{opacity:1!important;transform:none!important}
+  .footer{break-inside:avoid}
+  a{color:inherit!important;text-decoration:none!important}
+}
+@media(prefers-reduced-motion:reduce){.petal{animation:none!important;display:none!important}}
+
 @media(max-width:420px){.intro-card{min-height:0;padding:30px 16px}.crown{font-size:42px}.intro-foot{margin-top:27px}.hero{padding:65px 20px}.section{padding:52px 18px}.timer{gap:5px}.timer b{font-size:30px}.timer small{font-size:7px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
@@ -123,6 +150,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 <!-- PAGE 2: DETAILS -->
 <main class="details" id="detailsPage">
+  <div class="petal-layer" aria-hidden="true"><span class="petal">✿</span><span class="petal">✦</span><span class="petal">❀</span><span class="petal">✿</span><span class="petal">✦</span><span class="petal">❀</span></div>
   <nav class="nav">
     <button id="backBtn">← WELCOME</button>
     <span>THE WEDDING INVITATION</span>
@@ -212,6 +240,11 @@ button,a{-webkit-tap-highlight-color:transparent}
     <p class="lead">We warmly welcome you to share our happiness and bless the couple on their special day.</p>
     <a class="gold-btn" href="https://wa.me/919535874134?text=Namaskara%2C%20I%20will%20attend%20the%20wedding%20of%20Karibasava%20Reddy%20S%20and%20Dr%20Vandana%20K." target="_blank" rel="noopener">CONFIRM ON WHATSAPP</a>
     <a class="phone" href="tel:+919535874134">Call: 95358 74134</a>
+    <div class="action-row">
+      <button class="action-btn primary" id="shareBtn" type="button">↗ SHARE INVITATION</button>
+      <button class="action-btn" id="pdfBtn" type="button">↓ SAVE AS PDF</button>
+    </div>
+    <p id="shareStatus" aria-live="polite" style="font-size:10px;color:#806a62;margin-top:12px"></p>
   </section>
 
   <footer class="footer">
@@ -246,6 +279,25 @@ function initReveal(){
   },{threshold:.12});
   items.forEach(el=>observer.observe(el));
 }
+// Share the live invitation. If native sharing is unavailable, copy the link.
+document.getElementById('shareBtn').addEventListener('click',async()=>{
+  const shareData={
+    title:'Karibasava & Vandana | Wedding Invitation',
+    text:'You are warmly invited to the wedding of Karibasava Reddy S & Dr Vandana K.',
+    url:window.location.href
+  };
+  const status=document.getElementById('shareStatus');
+  try{
+    if(navigator.share){await navigator.share(shareData);status.textContent='Thank you for sharing our invitation!';}
+    else if(navigator.clipboard && window.isSecureContext){await navigator.clipboard.writeText(window.location.href);status.textContent='Invitation link copied. Share it with your family and friends!';}
+    else{status.textContent='Copy this link from your browser address bar to share the invitation.';}
+  }catch(error){
+    if(error.name!=='AbortError')status.textContent='Please use your browser Share option to share this invitation.';
+  }
+});
+// Opens the phone/browser print screen. Choose "Save as PDF" there.
+document.getElementById('pdfBtn').addEventListener('click',()=>window.print());
+
 const weddingDate=new Date('2026-11-15T09:27:00+05:30').getTime();
 function updateCountdown(){
   const distance=weddingDate-Date.now();
